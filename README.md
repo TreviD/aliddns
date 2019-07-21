@@ -1,2 +1,2 @@
 # aliddns
-aliddns by python
+aliddns ipv6 by python
