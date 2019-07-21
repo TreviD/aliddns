@@ -79,6 +79,27 @@ def get_Local_ipv6_address_win():
     else:
         return None
 
+def get_Local_ipv6_address_win2():
+    """
+	Get local ipv6
+    """
+    # pageURL = 'https://ip.zxinc.org/ipquery/'
+    linelist = os.popen(''' ipconfig ''').readlines()
+    webContent = ""
+    for item in linelist:
+        webContent += item
+
+
+    print(linelist)
+    ipv6_pattern = '(([a-f0-9]{1,4}:){7}[a-f0-9]{1,4})'
+
+    m = re.search(ipv6_pattern, webContent)
+
+    if m is not None:
+        return m.group()
+    else:
+        return None
+
 
 def get_Local_ipv6_address_linux():
     """
@@ -159,18 +180,23 @@ if __name__ == '__main__':
         ipv6Addr = get_Local_ipv6_address_linux()
         print()
     elif sysPlatform == "win32":
-        ipv6Addr = get_Local_ipv6_address_win()
+        ipv6Addr = get_Local_ipv6_address_win2()
         # print()
     else:
         ipv6Addr = get_Local_ipv6_address_win()
 
     if not ipv6Addr:
-        exit()
+        exit(0)
     # ipv6Addr = "2409:8a20:c1a:6cf0:dde6:f32:2017:ba95"
     print(ipv6Addr)
 
     # recordid = get_record_id()
     jsonD = get_record_info()
+    time.sleep(5)
+    if jsonD["TotalCount"]==0:
+        add_record(ipv6Addr)
+        exit(0)
+
     recordid = jsonD["DomainRecords"]["Record"][0]["RecordId"]
     if recordid == "":
         add_record(ipv6Addr)
@@ -178,3 +204,4 @@ if __name__ == '__main__':
         ipvalue = jsonD["DomainRecords"]["Record"][0]["Value"]
         if ipvalue != ipv6Addr:
             update_record(recordid, ipv6Addr)
+
