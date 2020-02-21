@@ -21,8 +21,6 @@ import argparse
 
 aliddnsipv6_ak = "AccessKeyId"
 aliddnsipv6_sk = "Access Key Secret"
-#aliddnsipv6_name1 = 'sync.alivps'
-#aliddnsipv6_domain = 'trevid.top'
 #aliddnsipv6_ttl = "600"
 
 params = {
