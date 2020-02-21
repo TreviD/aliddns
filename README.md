@@ -1,5 +1,5 @@
 # aliddns
-aliddns ipv6 by python
+aliddns by python
 
 ### 使用方式
 
