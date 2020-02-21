@@ -12,43 +12,164 @@ import time
 from datetime import datetime
 import sys
 import os
+import ssl
+import argparse
 
-
-
+# author: TreviD
+# date: 2020-02-21
+# version: v0.2
 
 aliddnsipv6_ak = "AccessKeyId"
 aliddnsipv6_sk = "Access Key Secret"
-aliddnsipv6_name1 = 'subDomainName'
-aliddnsipv6_domain = 'domainName'
-aliddnsipv6_ttl = "600"
+#aliddnsipv6_name1 = 'sync.alivps'
+#aliddnsipv6_domain = 'trevid.top'
+#aliddnsipv6_ttl = "600"
 
-timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
-timestamp = timestamp.replace(":", "%3A")
+params = {
+    'Format': 'JSON',
+    'Version': '2015-01-09',
+    'AccessKeyId': aliddnsipv6_ak,
+    'Signature': '',
+    'SignatureMethod': 'HMAC-SHA1',
+    'SignatureNonce': '',
+    'SignatureVersion': '',
+    'Timestamp': ''
+}
 
-if aliddnsipv6_name1 == "@":
-    aliddnsipv6_name = aliddnsipv6_domain
-else:
-    aliddnsipv6_name = aliddnsipv6_name1 + "." + aliddnsipv6_domain
 
-
-def format_param(action):
-    D = {
-        'AccessKeyId': aliddnsipv6_ak,
-        'Action': action,
-        'Format': 'JSON',
-        'Version': '2015-01-09'
-    }
-
-    sortedD = sorted(D.items(), key=lambda x: x[0])
-    # url_sortedD=percentEncode(sortedD)
-    canstring = ''
-    # for k, v in sortedD:
-    #     canstring += '&' + percentEncode(k) + '=' + percentEncode(v)
-    stringToSign = 'GET&%2F&' + percentEncode(canstring[1:])
-    # access_key_secret = 'access_key_secret'
-    h = hmac.new(bytes(aliddnsipv6_sk + "&", encoding="utf8"), bytes(stringToSign, encoding="utf8"), sha1)
+def getSignature(params):
+    list = []
+    for key in params:
+        # print(key)
+        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+    list.sort()
+    CanonicalizedQueryString = '&'.join(list)
+    print("strlist:"+CanonicalizedQueryString)
+    StringToSign = 'GET'+'&' + percentEncode("/")  +"&"+percentEncode(CanonicalizedQueryString)
+    print("StringToSign:"+StringToSign)
+    h = hmac.new(bytes(aliddnsipv6_sk + "&", encoding="utf8"),
+                 bytes(StringToSign, encoding="utf8"), sha1)
     signature = base64.encodebytes(h.digest()).strip()
-    return str(signature, encoding="utf8")
+    signature = str(signature, encoding="utf8")
+    print(signature)
+    return signature
+
+def get_record_info(SubDomain,DomainName,Type):
+    params = {
+        'Format': 'JSON',
+        'Version': '2015-01-09',
+        'AccessKeyId': aliddnsipv6_ak,
+        'SignatureMethod': 'HMAC-SHA1',
+        'SignatureNonce': '',
+        'SignatureVersion': '1.0',
+        'Timestamp': '',
+        'Action': 'DescribeSubDomainRecords'
+    }
+    params['DomainName'] = DomainName
+    params['SubDomain'] = SubDomain+"."+DomainName
+    params['Type'] = Type
+    timestamp = time.time()
+    formatTime = time.strftime(
+        "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    params['Timestamp'] = formatTime
+    params['SignatureNonce'] = timestamp
+
+    Signature = getSignature(params)
+    params['Signature'] = Signature
+    list = []
+    for key in params:
+        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+    list.sort()
+    paramStr = "&".join(list)
+    url = "https://alidns.aliyuncs.com/?" + paramStr
+    print("url:"+url)
+    context = ssl._create_unverified_context()
+    jsonStr = urllib.request.urlopen(
+        url, context=context).read().decode("utf8")
+    return json.loads(jsonStr)
+
+
+
+
+
+def add_domain_record(DomainName, RR, Type, Value):
+    print("start add domain record")
+    params = {
+        'Format': 'JSON',
+        'Version': '2015-01-09',
+        'AccessKeyId': aliddnsipv6_ak,
+        'SignatureMethod': 'HMAC-SHA1',
+        'SignatureNonce': '',
+        'SignatureVersion': '1.0',
+        'Timestamp': '',
+        'Action': 'AddDomainRecord'
+    }
+    params['DomainName'] = DomainName
+    params['RR'] = RR
+    params['Type'] = Type
+    params['Value'] = Value
+
+    timestamp = time.time()
+    formatTime = time.strftime(
+        "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    # formatTime = formatTime.replace(":", "%3A")
+    params['Timestamp'] = formatTime
+    params['SignatureNonce'] = timestamp
+
+    Signature = getSignature(params)
+    params['Signature'] = Signature
+    list = []
+    for key in params:
+        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+    list.sort()
+    paramStr = "&".join(list)
+    url = "https://alidns.aliyuncs.com/?" + paramStr
+    print("url:"+url)
+    context = ssl._create_unverified_context()
+    jsonStr = urllib.request.urlopen(
+        url, context=context).read().decode("utf8")
+    return json.loads(jsonStr)
+
+
+
+def update_domain_record(RecordId, RR, Value, Type):
+    print("start update domain record")
+    params = {
+        'Format': 'JSON',
+        'Version': '2015-01-09',
+        'AccessKeyId': aliddnsipv6_ak,
+        'SignatureMethod': 'HMAC-SHA1',
+        'SignatureNonce': '',
+        'SignatureVersion': '1.0',
+        'Timestamp': '',
+        'Action': 'UpdateDomainRecord'
+    }
+    params['RecordId'] = RecordId
+    params['RR'] = RR
+    params['Type'] = Type
+    params['Value'] = Value
+
+    timestamp = time.time()
+    formatTime = time.strftime(
+        "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    params['Timestamp'] = formatTime
+    params['SignatureNonce'] = timestamp
+
+    Signature = getSignature(params)
+    params['Signature'] = Signature
+    list = []
+    for key in params:
+        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+    list.sort()
+    paramStr = "&".join(list)
+    url = "https://alidns.aliyuncs.com/?" + paramStr
+    print("url:"+url)
+    context = ssl._create_unverified_context()
+    jsonStr = urllib.request.urlopen(
+        url, context=context).read().decode("utf8")
+    return json.loads(jsonStr)
+
+
 
 
 def percentEncode(str):
@@ -61,7 +182,7 @@ def percentEncode(str):
 
 def get_Local_ipv6_address_win():
     """
-	Get local ipv6
+        Get local ipv6
     """
     # pageURL = 'https://ip.zxinc.org/ipquery/'
     # pageURL = 'https://ip.sb/'
@@ -79,16 +200,16 @@ def get_Local_ipv6_address_win():
     else:
         return None
 
+
 def get_Local_ipv6_address_win2():
     """
-	Get local ipv6
+        Get local ipv6
     """
     # pageURL = 'https://ip.zxinc.org/ipquery/'
     linelist = os.popen(''' ipconfig ''').readlines()
     webContent = ""
     for item in linelist:
         webContent += item
-
 
     print(linelist)
     ipv6_pattern = '(([a-f0-9]{1,4}:){7}[a-f0-9]{1,4})'
@@ -103,7 +224,7 @@ def get_Local_ipv6_address_win2():
 
 def get_Local_ipv6_address_linux():
     """
-	Get local ipv6
+        Get local ipv6
     """
     # pageURL = 'https://ip.zxinc.org/ipquery/'
     # pageURL = 'https://ip.sb/'
@@ -123,57 +244,13 @@ def get_Local_ipv6_address_linux():
         return None
 
 
-def send_request(action, urlParam):
-    args = "AccessKeyId=" + aliddnsipv6_ak + "&Action=" + action + "&Format=json&" + urlParam + "&Version=2015-01-09"
-    # signStr = "AccessKeyId=" + aliddnsipv6_ak + "&Action=" + action + "&Format=json&"+urlParam+"&Version=2015-01-09"
-    signStr = "GET&%2F&" + percentEncode(args)
-    h = hmac.new(bytes(aliddnsipv6_sk + "&", encoding="utf8"), bytes(signStr, encoding="utf8"), sha1)
-    signature = base64.encodebytes(h.digest()).strip()
-
-    url = "https://alidns.aliyuncs.com/?" + args + "&Signature=" + str(signature, encoding="utf8")
-    jsonStr = urllib.request.urlopen(url).read().decode("utf8")
-    return jsonStr
+def get_ipv4_net():
+    context = ssl._create_unverified_context()
+    res = urllib.request.urlopen("https://api.ip.sb/jsonip", context=context)
+    return json.loads(res.read().decode('utf8'))['ip']
 
 
-def get_record_id():
-    # signature =
-    urlParam = "SignatureMethod=HMAC-SHA1&SignatureNonce=" + timestamp + "&SignatureVersion=1.0&SubDomain=" + aliddnsipv6_name + "&Timestamp=" + timestamp + "&Type=AAAA"
-    jsonStr = send_request("DescribeSubDomainRecords", urlParam)
-    jsonD = json.loads(jsonStr)
-    try:
-        recordid = jsonD["DomainRecords"]["Record"][0]["RecordId"]
-        return recordid
-    except Exception:
-        return ""
-
-
-def get_record_info():
-    # signature =
-    urlParam = "SignatureMethod=HMAC-SHA1&SignatureNonce=" + timestamp + "&SignatureVersion=1.0&SubDomain=" + aliddnsipv6_name + "&Timestamp=" + timestamp + "&Type=AAAA"
-    jsonStr = send_request("DescribeSubDomainRecords", urlParam)
-    jsonD = json.loads(jsonStr)
-    try:
-        # recordid = jsonD["DomainRecords"]["Record"][0]["RecordId"]
-        return jsonD
-    except Exception:
-        return ""
-
-
-def update_record(recordId, ipv6addr):
-    # send_request "UpdateDomainRecord" "RR=$aliddnsipv6_name1&RecordId=$1&SignatureMethod=HMAC-SHA1&SignatureNonce=$timestamp&SignatureVersion=1.0&TTL=$aliddnsipv6_ttl&Timestamp=$timestamp&Type=AAAA&Value=$(enc $ipv6)"
-    urlParam = "RR=" + aliddnsipv6_name1 + "&RecordId=" + recordId + "&SignatureMethod=HMAC-SHA1&SignatureNonce=" + timestamp + "&SignatureVersion=1.0&TTL=" + aliddnsipv6_ttl + "&Timestamp=" + timestamp + "&Type=AAAA&Value=" + percentEncode(
-        ipv6addr)
-    send_request("UpdateDomainRecord", urlParam)
-
-
-def add_record(ipv6addr):
-    # send_request "AddDomainRecord&DomainName=$aliddnsipv6_domain" "RR=$aliddnsipv6_name1&SignatureMethod=HMAC-SHA1&SignatureNonce=$timestamp&SignatureVersion=1.0&TTL=$aliddnsipv6_ttl&Timestamp=$timestamp&Type=AAAA&Value=$(enc $ipv6)"
-    urlParam = "RR=" + aliddnsipv6_name1 + "&SignatureMethod=HMAC-SHA1&SignatureNonce=" + timestamp + "&SignatureVersion=1.0&TTL=" + aliddnsipv6_ttl + "&Timestamp=" + timestamp + "&Type=AAAA&Value=" + percentEncode(
-        ipv6addr)
-    send_request("AddDomainRecord&DomainName=" + aliddnsipv6_domain, urlParam)
-
-
-if __name__ == '__main__':
+def get_local_ipv6():
     sysPlatform = sys.platform
     ipv6Addr=""
     if sysPlatform == "linux":
@@ -185,23 +262,52 @@ if __name__ == '__main__':
     else:
         ipv6Addr = get_Local_ipv6_address_win()
 
-    if not ipv6Addr:
-        exit(0)
-    # ipv6Addr = "2409:8a20:c1a:6cf0:dde6:f32:2017:ba95"
-    print(ipv6Addr)
+    return ipv6Addr
 
-    # recordid = get_record_id()
-    jsonD = get_record_info()
-    time.sleep(5)
-    if jsonD["TotalCount"]==0:
-        add_record(ipv6Addr)
-        exit(0)
 
-    recordid = jsonD["DomainRecords"]["Record"][0]["RecordId"]
-    if recordid == "":
-        add_record(ipv6Addr)
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser()
+    parser.description = '阿里云云解析工具'
+    # parser.add_argument("key", help="从https://ak-console.aliyun.com/#/accesskey得到的AccessKeyId", type=str)
+    # parser.add_argument("secret", help="从https://ak-console.aliyun.com/#/accesskey得到的AccessKeySecret", type=str)
+    parser.add_argument("RR",help="RR例子：@, *, www, ...", type=str)
+    parser.add_argument("DomainName", help="domain例子: aliyun.com, baidu.com, google.com, ...", type=str)
+    parser.add_argument("Type", help="类型(A/AAAA)", type=str)
+    args = parser.parse_args()
+    Type=""
+    ip=""
+    if args.Type.lower() == "a":
+        ip=get_ipv4_net()
+        Type="A"
+    elif args.Type.lower() == "aaaa":
+        ip=get_local_ipv6()
+        Type="AAAA"
+    print("本机IP: " + ip)
+
+    RR = args.RR
+    DomainName = args.DomainName
+
+    # client = AcsClient(args.key, args.secret, 'cn-hangzhou')
+    recordListInfo = get_record_info(RR,DomainName,Type)
+    
+    if recordListInfo['TotalCount'] == 0:
+        print("记录不存在，添加记录")
+        add_domain_record(DomainName, RR,Type,ip)
     else:
-        ipvalue = jsonD["DomainRecords"]["Record"][0]["Value"]
-        if ipvalue != ipv6Addr:
-            update_record(recordid, ipv6Addr)
+        records = recordListInfo["DomainRecords"]["Record"]
+        hasFind = "false"
+        for record in records:
+            if record['RR'] == RR and  record['DomainName'] == DomainName and record['Type'] == Type:
+                hasFind = "true"
+                if record['Value'] == ip :
+                    print("ip 一致，无需更新")
+                else:
+                    print("更新域名")
+                    update_domain_record(record['RecordId'],RR,ip,Type)
+        if not hasFind:
+            print("记录不存在，添加记录")
+            add_domain_record(DomainName, RR,Type,ip)
 
+
+        
