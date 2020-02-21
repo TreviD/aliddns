@@ -281,6 +281,9 @@ if __name__ == '__main__':
     elif args.Type.lower() == "aaaa":
         ip=get_local_ipv6()
         Type="AAAA"
+    else:
+        print("参数不正确，例：python3 ./aliddns.py www baidu.com A")
+        exit()
     print("本机IP: " + ip)
 
     RR = args.RR
