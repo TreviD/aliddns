@@ -7,6 +7,7 @@ import re
 import sys
 import urllib.request
 from urllib.parse import quote
+from urllib import error
 from _sha1 import sha1
 import time
 from datetime import datetime
@@ -21,7 +22,8 @@ import argparse
 
 aliddnsipv6_ak = "AccessKeyId"
 aliddnsipv6_sk = "Access Key Secret"
-#aliddnsipv6_ttl = "600"
+
+# aliddnsipv6_ttl = "600"
 
 params = {
     'Format': 'JSON',
@@ -39,20 +41,21 @@ def getSignature(params):
     list = []
     for key in params:
         # print(key)
-        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+        list.append(percentEncode(key) + "=" + percentEncode(str(params[key])))
     list.sort()
     CanonicalizedQueryString = '&'.join(list)
-    print("strlist:"+CanonicalizedQueryString)
-    StringToSign = 'GET'+'&' + percentEncode("/")  +"&"+percentEncode(CanonicalizedQueryString)
-    print("StringToSign:"+StringToSign)
+    # print("strlist:" + CanonicalizedQueryString)
+    StringToSign = 'GET' + '&' + percentEncode("/") + "&" + percentEncode(CanonicalizedQueryString)
+    # print("StringToSign:" + StringToSign)
     h = hmac.new(bytes(aliddnsipv6_sk + "&", encoding="utf8"),
                  bytes(StringToSign, encoding="utf8"), sha1)
     signature = base64.encodebytes(h.digest()).strip()
     signature = str(signature, encoding="utf8")
-    print(signature)
+    # print(signature)
     return signature
 
-def get_record_info(SubDomain,DomainName,Type):
+
+def get_record_info(SubDomain, DomainName, Type):
     params = {
         'Format': 'JSON',
         'Version': '2015-01-09',
@@ -64,7 +67,7 @@ def get_record_info(SubDomain,DomainName,Type):
         'Action': 'DescribeSubDomainRecords'
     }
     params['DomainName'] = DomainName
-    params['SubDomain'] = SubDomain+"."+DomainName
+    params['SubDomain'] = SubDomain + "." + DomainName
     params['Type'] = Type
     timestamp = time.time()
     formatTime = time.strftime(
@@ -76,18 +79,21 @@ def get_record_info(SubDomain,DomainName,Type):
     params['Signature'] = Signature
     list = []
     for key in params:
-        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+        list.append(percentEncode(key) + "=" + percentEncode(str(params[key])))
     list.sort()
     paramStr = "&".join(list)
     url = "https://alidns.aliyuncs.com/?" + paramStr
-    print("url:"+url)
-    context = ssl._create_unverified_context()
-    jsonStr = urllib.request.urlopen(
-        url, context=context).read().decode("utf8")
-    return json.loads(jsonStr)
-
-
-
+    # print("url:" + url)
+    try:
+        print("查询域名信息：" + SubDomain + " " + DomainName + " " + Type)
+        context = ssl._create_unverified_context()
+        jsonStr = urllib.request.urlopen(
+            url, context=context).read().decode("utf8")
+        print("查询结束，查询结果：" + jsonStr)
+        return json.loads(jsonStr)
+    except error.HTTPError as e:
+        print(e)
+        print("查询域名信息失败：" + e.read().decode("utf8"))
 
 
 def add_domain_record(DomainName, RR, Type, Value):
@@ -118,16 +124,21 @@ def add_domain_record(DomainName, RR, Type, Value):
     params['Signature'] = Signature
     list = []
     for key in params:
-        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+        list.append(percentEncode(key) + "=" + percentEncode(str(params[key])))
     list.sort()
     paramStr = "&".join(list)
     url = "https://alidns.aliyuncs.com/?" + paramStr
-    print("url:"+url)
-    context = ssl._create_unverified_context()
-    jsonStr = urllib.request.urlopen(
-        url, context=context).read().decode("utf8")
-    return json.loads(jsonStr)
-
+    # print("url:" + url)
+    try:
+        print("添加 " + RR + " " + DomainName + " " + Type + " " + Value)
+        context = ssl._create_unverified_context()
+        jsonStr = urllib.request.urlopen(
+            url, context=context).read().decode("utf8")
+        print("添加成功")
+        return json.loads(jsonStr)
+    except error.HTTPError as e:
+        print(e)
+        print("添加失败：" + e.read().decode("utf8"))
 
 
 def update_domain_record(RecordId, RR, Value, Type):
@@ -157,17 +168,21 @@ def update_domain_record(RecordId, RR, Value, Type):
     params['Signature'] = Signature
     list = []
     for key in params:
-        list.append(percentEncode(key)+"="+percentEncode(str(params[key])))
+        list.append(percentEncode(key) + "=" + percentEncode(str(params[key])))
     list.sort()
     paramStr = "&".join(list)
     url = "https://alidns.aliyuncs.com/?" + paramStr
-    print("url:"+url)
-    context = ssl._create_unverified_context()
-    jsonStr = urllib.request.urlopen(
-        url, context=context).read().decode("utf8")
-    return json.loads(jsonStr)
-
-
+    # print("url:" + url)
+    try:
+        print("更新 " + RR + " " + " " + Type + " " + Value)
+        context = ssl._create_unverified_context()
+        jsonStr = urllib.request.urlopen(
+            url, context=context).read().decode("utf8")
+        print("更新成功")
+        return json.loads(jsonStr)
+    except error.HTTPError as e:
+        print(e)
+        print("更新失败：" + e.read().decode("utf8"))
 
 
 def percentEncode(str):
@@ -250,7 +265,7 @@ def get_ipv4_net():
 
 def get_local_ipv6():
     sysPlatform = sys.platform
-    ipv6Addr=""
+    ipv6Addr = ""
     if sysPlatform == "linux":
         ipv6Addr = get_Local_ipv6_address_linux()
         print()
@@ -264,51 +279,54 @@ def get_local_ipv6():
 
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser()
     parser.description = '阿里云云解析工具'
     # parser.add_argument("key", help="从https://ak-console.aliyun.com/#/accesskey得到的AccessKeyId", type=str)
     # parser.add_argument("secret", help="从https://ak-console.aliyun.com/#/accesskey得到的AccessKeySecret", type=str)
-    parser.add_argument("RR",help="RR例子：@, *, www, ...", type=str)
+    parser.add_argument("RR", help="RR例子：@, *, www, ...", type=str)
     parser.add_argument("DomainName", help="domain例子: aliyun.com, baidu.com, google.com, ...", type=str)
     parser.add_argument("Type", help="类型(A/AAAA)", type=str)
+    parser.add_argument("value", help="[value]", type=str)
     args = parser.parse_args()
-    Type=""
-    ip=""
-    if args.Type.lower() == "a":
-        ip=get_ipv4_net()
-        Type="A"
-    elif args.Type.lower() == "aaaa":
-        ip=get_local_ipv6()
-        Type="AAAA"
+    Type = ""
+    ip = args.value
+    if not ip:
+        if args.Type.lower() == "a":
+            ip = get_ipv4_net()
+            Type = "A"
+        elif args.Type.lower() == "aaaa":
+            ip = get_local_ipv6()
+            Type = "AAAA"
+        else:
+            print("参数不正确，例：python3 ./aliddns.py www baidu.com A")
+            exit()
     else:
-        print("参数不正确，例：python3 ./aliddns.py www baidu.com A")
-        exit()
-    print("本机IP: " + ip)
+        Type = args.Type.upper()
 
     RR = args.RR
     DomainName = args.DomainName
 
+    print("开始处理: RR:" + RR + " DomainName:" + DomainName)
+    print("本机IP: " + ip)
+
     # client = AcsClient(args.key, args.secret, 'cn-hangzhou')
-    recordListInfo = get_record_info(RR,DomainName,Type)
-    
+    recordListInfo = get_record_info(RR, DomainName, Type)
+
     if recordListInfo['TotalCount'] == 0:
         print("记录不存在，添加记录")
-        add_domain_record(DomainName, RR,Type,ip)
+        add_domain_record(DomainName, RR, Type, ip)
     else:
         records = recordListInfo["DomainRecords"]["Record"]
         hasFind = "false"
         for record in records:
-            if record['RR'] == RR and  record['DomainName'] == DomainName and record['Type'] == Type:
+            if record['RR'] == RR and record['DomainName'] == DomainName and record['Type'] == Type:
                 hasFind = "true"
-                if record['Value'] == ip :
+                if record['Value'] == ip:
                     print("ip 一致，无需更新")
                 else:
                     print("更新域名")
-                    update_domain_record(record['RecordId'],RR,ip,Type)
+                    update_domain_record(record['RecordId'], RR, ip, Type)
         if not hasFind:
             print("记录不存在，添加记录")
-            add_domain_record(DomainName, RR,Type,ip)
-
-
-        
+            add_domain_record(DomainName, RR, Type, ip)
