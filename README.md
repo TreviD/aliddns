@@ -9,13 +9,15 @@ aliddns by python
 
 #### 参数说明
 
-- RR : 要设置的主机名，你要设置的域名前缀
-- DomainName：域名 ，在阿里云购买的域名  例如 www.baidu.com ，www为RR，baidu.com 为DomainName
-- Type：类型，IPv4 为 A，IPv6 为 AAAA
+1. RR : 要设置的主机名，你要设置的域名前缀
+2. DomainName：域名 ，在阿里云购买的域名  例如 www.baidu.com ，www为RR，baidu.com 为DomainName
+3. Type：类型，IPv4 为 A，IPv6 为 AAAA
+4. value：值（可选），可以手动设置值，若不传改参数，则默认获取本机的地址
 
 #### 运行示例
 
-```
-python3 ./aliddns.py www baidu.com A
-```
+
+1. 设置本机外网ip     `python3 ./aliddns.py www baidu.com A`
+
+2. 手动设置ip   `python3 ./aliddns.py www baidu.com A 1.1.1.1`
 
