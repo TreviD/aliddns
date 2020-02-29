@@ -19,5 +19,5 @@ aliddns by python
 
 1. 设置本机外网ip     `python3 ./aliddns.py www baidu.com A`
 
-2. 手动设置ip   `python3 ./aliddns.py www baidu.com A 1.1.1.1`
+2. 手动设置ip   `python3 ./aliddns.py www baidu.com A --value 1.1.1.1`
 
