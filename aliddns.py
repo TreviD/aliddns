@@ -287,7 +287,7 @@ if __name__ == '__main__':
     parser.add_argument("RR", help="RR例子：@, *, www, ...", type=str)
     parser.add_argument("DomainName", help="domain例子: aliyun.com, baidu.com, google.com, ...", type=str)
     parser.add_argument("Type", help="类型(A/AAAA)", type=str)
-    parser.add_argument("value", help="[value]", type=str)
+    parser.add_argument("--value", help="[value]", type=str)
     args = parser.parse_args()
     Type = ""
     ip = args.value
