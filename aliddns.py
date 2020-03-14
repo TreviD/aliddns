@@ -242,7 +242,7 @@ def get_Local_ipv6_address_linux():
     # pageURL = 'https://ip.zxinc.org/ipquery/'
     # pageURL = 'https://ip.sb/'
     linelist = os.popen(
-        ''' ip addr show eth0 | grep "inet6.*global" | awk \'{print $2}\' | awk -F"/" \'{print $1}\' ''').readlines()  # 这个返回值是一个list
+        ''' ip -6 addr | grep "inet6.*global" | awk \'{print $2}\' | awk -F"/" \'{print $1}\' ''').readlines()  # 这个返回值是一个list
     if linelist:
         content = linelist[0].strip()
     else:

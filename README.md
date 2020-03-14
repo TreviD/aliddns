@@ -6,7 +6,8 @@ aliddns by python
 首先打开脚本修改 `aliddnsipv6_ak ` 以及 `aliddnsipv6_sk` ，获取方式见阿里云文档 [https://help.aliyun.com/document_detail/34414.html](https://help.aliyun.com/document_detail/34414.html)
 
 运行方式 `python3 ./aliddns.py RR DomainName Type`
-
+### 使用方式(群晖DSM补充)
+在`python3 ./aliddns.py RR DomainName Type` 前加上 'export PYTHONIOENCODING=UTF-8'
 #### 参数说明
 
 1. RR : 要设置的主机名，你要设置的域名前缀
