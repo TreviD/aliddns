@@ -21,3 +21,18 @@ aliddns by python
 
 2. 手动设置ip   `python3 ./aliddns.py www baidu.com A --value 1.1.1.1`
 
+
+
+#### 配合群晖使用
+
+配合群晖计划任务使用时，由于编码问题，需要在计划任务执行的代码里填入如下代码
+
+```
+
+export PYTHONIOENCODING=utf8
+export LANG=en_US.utf8
+python3 /path/to/aliddns.py www baidu.com A
+
+```
+
+![UTOOLS1587388368832.png](http://yanxuan.nosdn.127.net/b7ccb012a5ef2380a9d2c321b375e604.png)
