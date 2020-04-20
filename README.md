@@ -35,4 +35,4 @@ python3 /path/to/aliddns.py www baidu.com A
 
 ```
 
-![UTOOLS1587388368832.png](http://yanxuan.nosdn.127.net/b7ccb012a5ef2380a9d2c321b375e604.png)
+![UTOOLS1587388368832.png](img/WX20200420-211610@2x.png)
