@@ -259,7 +259,7 @@ def get_Local_ipv6_address_linux():
 
 def get_ipv4_net():
     context = ssl._create_unverified_context()
-    res = urllib.request.urlopen("https://api.ip.sb/jsonip", context=context)
+    res = urllib.request.urlopen("https://api-ipv4.ip.sb/jsonip", context=context)
     return json.loads(res.read().decode('utf8'))['ip']
 
 
@@ -273,6 +273,9 @@ def get_local_ipv6():
         ipv6Addr = get_Local_ipv6_address_win2()
         # print()
     else:
+        ipv6Addr = get_Local_ipv6_address_win()
+    
+    if ipv6Addr == None:
         ipv6Addr = get_Local_ipv6_address_win()
 
     return ipv6Addr
