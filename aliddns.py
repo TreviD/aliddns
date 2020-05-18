@@ -10,7 +10,7 @@ from urllib.parse import quote
 from urllib import error
 from _sha1 import sha1
 import time
-from datetime import datetime
+from datetime import datetime,timezone
 import sys
 import os
 import ssl
@@ -70,8 +70,10 @@ def get_record_info(SubDomain, DomainName, Type):
     params['SubDomain'] = SubDomain + "." + DomainName
     params['Type'] = Type
     timestamp = time.time()
-    formatTime = time.strftime(
-        "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    # formatTime = time.strftime(
+    # "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    utc_dt = datetime.utcnow().replace(tzinfo=timezone.utc)
+    formatTime=utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     params['Timestamp'] = formatTime
     params['SignatureNonce'] = timestamp
 
@@ -114,8 +116,10 @@ def add_domain_record(DomainName, RR, Type, Value):
     params['Value'] = Value
 
     timestamp = time.time()
-    formatTime = time.strftime(
-        "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    # formatTime = time.strftime(
+    # "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    utc_dt = datetime.utcnow().replace(tzinfo=timezone.utc)
+    formatTime=utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     # formatTime = formatTime.replace(":", "%3A")
     params['Timestamp'] = formatTime
     params['SignatureNonce'] = timestamp
@@ -159,8 +163,10 @@ def update_domain_record(RecordId, RR, Value, Type):
     params['Value'] = Value
 
     timestamp = time.time()
-    formatTime = time.strftime(
-        "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    # formatTime = time.strftime(
+    # "%Y-%m-%dT%H:%M:%SZ", time.localtime(time.time() - 8 * 60 * 60))
+    utc_dt = datetime.utcnow().replace(tzinfo=timezone.utc)
+    formatTime=utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     params['Timestamp'] = formatTime
     params['SignatureNonce'] = timestamp
 
