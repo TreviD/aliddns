@@ -272,18 +272,16 @@ def get_ipv4_net():
 def get_local_ipv6():
     sysPlatform = sys.platform
     ipv6Addr = ""
-    if sysPlatform == "linux":
-        ipv6Addr = get_Local_ipv6_address_linux()
-        print()
-    elif sysPlatform == "win32":
-        ipv6Addr = get_Local_ipv6_address_win2()
-        # print()
-    else:
-        ipv6Addr = get_Local_ipv6_address_win()
+    ipv6Addr = get_Local_ipv6_address_win()
     
     if ipv6Addr == None:
-        ipv6Addr = get_Local_ipv6_address_win()
-
+        if sysPlatform == "linux":
+            ipv6Addr = get_Local_ipv6_address_linux()
+            print()
+        elif sysPlatform == "win32":
+            ipv6Addr = get_Local_ipv6_address_win2()
+        else:
+            ipv6Addr = get_Local_ipv6_address_win()
     return ipv6Addr
 
 
