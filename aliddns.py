@@ -205,7 +205,7 @@ def get_Local_ipv6_address_win():
     """
     # pageURL = 'https://ip.zxinc.org/ipquery/'
     # pageURL = 'https://ip.sb/'
-    pageURL = 'https://api-ipv6.ip.sb/ip'
+    pageURL = 'https://6.ipw.cn'
     content = urllib.request.urlopen(pageURL).read()
     webContent = content.decode("utf8")
 
@@ -286,7 +286,7 @@ def requestAndParseIp(url):
 
 
 def get_ipv4_net():
-    urlArr=["https://ipinfo.io/json","https://ifconfig.me","https://icanhazip.com","https://api.ip.sb/jsonip"]
+    urlArr=["https://ipinfo.io/json","https://4.ipw.cn","https://ifconfig.me","https://icanhazip.com","https://api.ip.sb/jsonip"]
     for url in urlArr:
        ip = requestAndParseIp(url);
        if ip != None:
