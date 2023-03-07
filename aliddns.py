@@ -17,8 +17,8 @@ import ssl
 import argparse
 
 # author: TreviD
-# date: 2020-02-21
-# version: v0.2
+# date: 2023-03-06
+# version: v0.3
 
 aliddnsipv6_ak = "AccessKeyId"
 aliddnsipv6_sk = "Access Key Secret"
@@ -263,10 +263,35 @@ def get_Local_ipv6_address_linux():
         return None
 
 
-def get_ipv4_net():
+def is_json(myjson):
+    try:
+        json_object = json.loads(myjson)
+    except ValueError as e:
+        return False
+    return True
+
+def requestAndParseIp(url):
     context = ssl._create_unverified_context()
-    res = urllib.request.urlopen("https://api-ipv4.ip.sb/jsonip", context=context)
-    return json.loads(res.read().decode('utf8'))['ip']
+    try:
+        res = urllib.request.urlopen(url, context=context, timeout=10)
+        str = res.read().decode('utf8')
+        if is_json(str):
+            return json.loads(str)["ip"]
+        else:
+            return str
+    except error as e:
+        return None
+
+
+
+
+def get_ipv4_net():
+    urlArr=["https://ipinfo.io/json","https://ifconfig.me","https://icanhazip.com","https://api.ip.sb/jsonip"]
+    for url in urlArr:
+       ip = requestAndParseIp(url);
+       if ip != None:
+           return ip
+    
 
 
 def get_local_ipv6():
